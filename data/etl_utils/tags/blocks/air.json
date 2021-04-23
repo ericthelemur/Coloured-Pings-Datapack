@@ -1,0 +1,51 @@
+{
+    "replace": false,
+    "values": [
+        "minecraft:air",
+        "minecraft:cave_air",
+
+        "#minecraft:flowers",
+        "#minecraft:crops",
+        "#minecraft:saplings",
+        "minecraft:grass",
+        "minecraft:tall_grass",
+        "minecraft:fern",
+        "minecraft:large_fern",
+        "minecraft:dead_bush",
+        "minecraft:vine",
+        "minecraft:sugar_cane",
+        "minecraft:lily_pad",
+        "minecraft:red_mushroom",
+        "minecraft:brown_mushroom",
+
+        "minecraft:crimson_fungus",
+        "minecraft:warped_fungus",
+        "minecraft:crimson_roots",
+        "minecraft:warped_roots",
+        "minecraft:weeping_vines",
+        "minecraft:twisting_vines",
+
+        "#minecraft:underwater_bonemeals",
+
+        "minecraft:tripwire",
+        "minecraft:torch",
+        "minecraft:soul_torch",
+        "minecraft:redstone_torch",
+        "minecraft:chain",
+        "minecraft:brewing_stand",
+
+        "minecraft:wall_torch",
+        "minecraft:soul_wall_torch",
+        "minecraft:redstone_wall_torch",
+        "#minecraft:pressure_plates",
+        "#minecraft:buttons",
+        "#minecraft:wall_signs",
+        "#minecraft:carpets",
+        
+        "minecraft:redstone_wire",
+        "minecraft:lever",
+        "minecraft:comparator",
+        "minecraft:repeater",
+        "#minecraft:rails" 
+    ]
+}
