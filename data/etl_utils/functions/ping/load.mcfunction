@@ -1,3 +1,4 @@
 scoreboard objectives add etl_ping_trigger minecraft.used:minecraft.carrot_on_a_stick
 scoreboard objectives add etl_ping_timer dummy
 scoreboard objectives add etl_ping_cooldow dummy
+scoreboard objectives add etl_ping_colour dummy
