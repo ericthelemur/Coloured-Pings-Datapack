@@ -36,4 +36,6 @@ team modify white color white
 
 scoreboard objectives add pick_colour trigger
 scoreboard players enable @a pick_colour 
+scoreboard objectives add etl_set_colour trigger
+scoreboard players enable @a etl_set_colour 
 scoreboard objectives add etl_colour dummy
