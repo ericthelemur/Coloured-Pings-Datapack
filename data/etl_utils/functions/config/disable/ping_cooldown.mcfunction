@@ -1,0 +1,2 @@
+scoreboard players set etl_ping_cooldown etl_ping_cooldow 0
+function etl_utils:config

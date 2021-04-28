@@ -1,4 +1,4 @@
-scoreboard players set @s etl_ping_cooldow 20
+scoreboard players operation @s etl_ping_cooldow = etl_ping_cooldown etl_ping_cooldow
 
 # Tags to ignore player
 tag @s add etl_rc_ignore
