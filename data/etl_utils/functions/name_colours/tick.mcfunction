@@ -3,5 +3,3 @@ execute as @a if score @s etl_set_colour > zero constants run function etl_utils
 
 # Print colour picker if triggered
 execute as @a if score @s pick_colour > zero constants run function etl_utils:name_colours/colour_picker
-
-function etl_utils:name_colours/trigger_enable

@@ -1,4 +1,4 @@
-scoreboard players operation @a[scores={etl_ping_cooldow=1..}] etl_ping_cooldow -= one constants
+execute if score etl_ping_cd enabled > zero constants run scoreboard players operation @a[scores={etl_ping_cooldow=1..}] etl_ping_cooldow -= one constants
 
 # Ping triggered
 execute as @a[scores={etl_ping_trigger=1..}] at @s anchored eyes run function etl_utils:ping/start_ping

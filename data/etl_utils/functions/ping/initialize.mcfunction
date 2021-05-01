@@ -2,3 +2,6 @@ scoreboard objectives add etl_ping_trigger minecraft.used:minecraft.carrot_on_a_
 scoreboard objectives add etl_ping_timer dummy
 scoreboard objectives add etl_ping_cooldow dummy
 scoreboard objectives add etl_ping_colour dummy
+
+scoreboard players set etl_ping_cooldown etl_ping_cooldow 20
+scoreboard players set etl_ping_cd_inc etl_ping_cooldow 5

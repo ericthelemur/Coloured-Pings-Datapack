@@ -20,6 +20,7 @@ scoreboard players reset etl_ping enabled
 scoreboard players reset etl_ping_sound enabled
 scoreboard players reset etl_name_colours enabled
 
+advancement revoke @a only etl_utils:etlutils
 
 tellraw @s {"text":"\n                                                                                ","color":"#e07000","strikethrough":true}
 tellraw @s ["", {"text":"ETL Utils has been Uninstalled","hoverEvent":{"action":"show_text","contents":["",{"text":"Remove this folder from world/datapacks to complete.","color":"red"}]}}]

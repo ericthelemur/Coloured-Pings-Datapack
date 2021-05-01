@@ -1,0 +1,17 @@
+{
+    "display": {
+        "title": "ETL Utils: Name Colours and Pings",
+        "description": "Provides a name colour changer, and ping system with colours and sounds matching your name colour.",
+        "icon": {
+            "item": "minecraft:orange_dye"
+        },
+        "announce_to_chat": false,
+        "show_toast": false
+    },
+    "parent": "global:etl",
+    "criteria": {
+        "trigger": {
+            "trigger": "minecraft:tick"
+        }
+    }
+}
