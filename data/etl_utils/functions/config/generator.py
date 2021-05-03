@@ -246,9 +246,7 @@ Config(
                          min_sb="zero constants", max_sb="one_hundred constants",
                          extra_enable_comm="scoreboard players set @a etl_ping_cooldow 0"),
         Toggle("Ping Sounds", "etl_ping_sound enabled", "ping_sound"),
-        Toggle("Entity Pings", "etl_ping_entity enabled", "ping_entity"),
-        Adjustable("Adjust", "adjust_test", "etl_ping_cooldow", "etl_ping_cooldown", "etl_ping_cooldow", "etl_ping_cd_inc", 
-                            min_sb="zero constants", max_sb="one_hundred constants"),
+        Toggle("Entity Pings", "etl_ping_entity enabled", "ping_entity")
     ),
     Uninstall("ETL Utils")
 ).create_files()
