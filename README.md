@@ -1,4 +1,4 @@
-# Coloured-Pings-Datapack
+# ETL Utils: Coloured User names and pinging
 Pair of datapacks to allow changing name colour and placing notification pings for other players
 
 ## Colour Picker
