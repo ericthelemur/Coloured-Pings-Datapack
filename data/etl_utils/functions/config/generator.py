@@ -19,10 +19,29 @@ class ConfigField:
         pass
 
 
+class Config(ConfigField):
+    """Root class"""
+    def __init__(self, *contents):
+        self.contents = contents
+
+    def render(self, indent=0):
+        for c in self.contents:
+            print(c.render(indent=0))
+
+    def create_files(self, indent=0):
+        with open("config.mcfunction", "w", encoding="utf-8") as f:
+            print("# Generated with ericthelemur's Datapack Settings Generator\n", file=f)
+            for c in self.contents:
+                print(c.render(indent=0), file=f)
+
+        for c in self.contents:
+            c.create_files()
+
+
 class Title(ConfigField):
     """Title banner at top"""
     def __init__(self, title, version, title_colour):
-        self.args = {"title": f"{title} {version} - Config Menu".center(80).rstrip(), "version": version, "title_colour": title_colour, "line_colour": line_colour}
+        self.args = {"title": f"{title} {version} - Config Menu".center(60).rstrip(), "version": version, "title_colour": title_colour, "line_colour": line_colour}
 
     def render(self, indent=0):
         return ("""# Header"""
@@ -39,7 +58,7 @@ class SubTitle(ConfigField):
 
     def render(self, indent=0):
         self.args["indent"] = " " * indent_size * indent
-        return """\ntellraw @s [{"text":"\\n%(indent)s%(title)s","bold":true,"color":"%(colour)s"}]""" % self.args
+        return """tellraw @s [{"text":"\\n%(indent)s%(title)s","bold":true,"color":"%(colour)s"}]""" % self.args
 
 
 class Uninstall(ConfigField):
@@ -48,7 +67,7 @@ class Uninstall(ConfigField):
         self.args = {"title": title, "line_colour": line_colour, "namespace": namespace}
 
     def render(self, indent=0):
-        return ("""tellraw @s {"text":"\\n                                                                                ","color":"%(line_colour)s","strikethrough":true}"""
+        return ("""tellraw @s {"text":"                                                                                ","color":"%(line_colour)s","strikethrough":true}"""
               + """\ntellraw @s ["",{"text":"◎","color":"dark_red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/uninstall_verif"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to Uninstall %(title)s","color":"red"}]}}," Uninstall %(title)s"]"""
               + """\ntellraw @s {"text":"                                                                                \\n","color":"%(line_colour)s","strikethrough":true}\n"""
         ) % self.args
@@ -58,7 +77,7 @@ class Uninstall(ConfigField):
             print("# Generated with ericthelemur's Datapack Settings Generator\n", file=f)
             print("""tellraw @s {"text":"\\n                                                                                ","color":"%(line_colour)s","strikethrough":true}""" % self.args, file=f)
             print("""tellraw @s ["", {"text":"Confirm uninstall of %(title)s?\\n    "},{"text":"Confirm Uninstall","color":"dark_red","underlined":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:uninstall"},"hoverEvent":{"action":"show_text","contents":["",{"text":"This will remove all settings.","color":"red"}]}}]""" % self.args, file=f)
-            print("""tellraw @s {"text":"                                                                                \\n","color":"%(line_colour)s","strikethrough":true}""" % self.args, file=f)
+            print("""tellraw @s {"text":"                                                                                ","color":"%(line_colour)s","strikethrough":true}""" % self.args, file=f)
             
 
 class Text(ConfigField):
@@ -77,9 +96,9 @@ class Toggle(ConfigField):
 
     def render(self, indent=0):
         self.args["indent"] = " " * indent_size * indent
-        return ("""# %(label)s"""
-                + """\nexecute unless score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☒","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/enable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to enable ","color":"green"},"%(label)s"]}},"%(label)s"]"""
-                + """\nexecute if score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☑","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s"]"""
+        return ("""\n# %(label)s"""
+                + """\nexecute unless score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☒","color":"red","bold":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/enable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to enable ","color":"green"},"%(label)s"]}},"%(label)s"]"""
+                + """\nexecute if score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☑","color":"green","bold":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s"]"""
                 + "\n") % self.args
 
     def create_files(self, indent=0):
@@ -94,7 +113,7 @@ class Toggle(ConfigField):
             print("scoreboard players set %(sb_player)s -1\nfunction %(namespace)s:config" % self.args, file=f)
 
 
-class Adjustable(ConfigField):
+class AdjustToggle(ConfigField):
     """Toggle with adjustment. Changes player adjust_pl in adjust_sb by inc_pl in inc_sb amount on +/-. Limited to max_sb/min_sb scoreboard values. On inc/dec, extra gets added too. Currently no case for min=max"""
 
     def __init__(self, label, sb_player, function, adjust_sb, adjust_pl, inc_sb, inc_pl, min_sb=None, max_sb=None, extra_enable_comm="", extra_disable_comm="", extra_inc_comm="", extra_dec_comm=""):
@@ -107,15 +126,15 @@ class Adjustable(ConfigField):
         end = ""
         if self.args["min_sb"]:
             self.args["filters"] += "if score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s " % self.args
-            end += """\nexecute if score %(sb_player)s > zero constants unless score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s """ + ("if score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s " if self.args["max_sb"] else "") + """run tellraw @s ["%(indent)s",{"text":"☑","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s ", {"text":"-","color":"gray","hoverEvent":{"action":"show_text","contents":["",{"text":"Cannot decrease further"}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/inc/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to increase %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}]"""
+            end += """\nexecute if score %(sb_player)s > zero constants unless score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s """ + ("if score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s " if self.args["max_sb"] else "") + """run tellraw @s ["%(indent)s",{"text":"☑","color":"green","bold":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s ", {"text":"-","color":"gray","hoverEvent":{"action":"show_text","contents":["",{"text":"Cannot decrease further"}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/inc/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to increase %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}]"""
 
         if self.args["max_sb"]:
             self.args["filters"] += "if score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s " % self.args
-            end += """\nexecute if score %(sb_player)s > zero constants unless score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s """ + ("if score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s " if self.args["min_sb"] else "") + """run tellraw @s ["%(indent)s",{"text":"☑","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s ", {"text":"-","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/dec/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to decrease %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"gray","hoverEvent":{"action":"show_text","contents":["",{"text":"Cannot increase further"}]}}]"""
+            end += """\nexecute if score %(sb_player)s > zero constants unless score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s """ + ("if score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s " if self.args["min_sb"] else "") + """run tellraw @s ["%(indent)s",{"text":"☑","color":"green","bold":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s ", {"text":"-","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/dec/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to decrease %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"gray","hoverEvent":{"action":"show_text","contents":["",{"text":"Cannot increase further"}]}}]"""
 
         return ("""# %(label)s"""
-                + """\nexecute unless score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☒","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/enable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to enable ","color":"green"},"%(label)s"]}},"%(label)s"]"""
-                + """\nexecute if score %(sb_player)s > zero constants%(filters)srun tellraw @s ["%(indent)s",{"text":"☑","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s ", {"text":"-","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/dec/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to decrease %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/inc/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to increase %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}]"""
+                + """\nexecute unless score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☒","color":"red","bold":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/enable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to enable ","color":"green"},"%(label)s"]}},"%(label)s"]"""
+                + """\nexecute if score %(sb_player)s > zero constants%(filters)srun tellraw @s ["%(indent)s",{"text":"☑","color":"green","bold":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s ", {"text":"-","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/dec/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to decrease %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/inc/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to increase %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}]"""
                 + end + "\n") % self.args
     
     def create_files(self, indent=0):
@@ -140,6 +159,43 @@ class Adjustable(ConfigField):
             print("scoreboard players operation %(adjust_pl)s %(adjust_sb)s -= %(inc_pl)s %(inc_sb)s\nfunction %(namespace)s:config" % self.args, file=f)
 
 
+
+class Adjustable(ConfigField):
+    """Add/subtract from value. Changes player adjust_pl in adjust_sb by inc_pl in inc_sb amount on +/-. Limited to max_sb/min_sb scoreboard values. On inc/dec, extra gets added too. Currently no case for min=max"""
+
+    def __init__(self, label, function, adjust_sb, adjust_pl, inc_sb, inc_pl, min_sb=None, max_sb=None, extra_inc_comm="", extra_dec_comm=""):
+        self.args = {"label": label, "function": function, "adjust_sb": adjust_sb, "adjust_pl": adjust_pl, "inc_sb": inc_sb, "inc_pl": inc_pl, "min_sb": min_sb, "max_sb": max_sb, "namespace": namespace, "extra_inc_comm": extra_inc_comm, "extra_dec_comm": extra_dec_comm}
+
+    def render(self, indent=0):
+        self.args["indent"] = " " * indent_size * indent
+        
+        self.args["filters"] = " "
+        end = ""
+        if self.args["min_sb"]:
+            self.args["filters"] += "if score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s " % self.args
+            end += """\nexecute unless score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s """ + ("if score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s " if self.args["max_sb"] else "") + """run tellraw @s ["%(indent)s",{"text":"☐","color":"gray","bold":true},"%(label)s ", {"text":"-","color":"gray","hoverEvent":{"action":"show_text","contents":["",{"text":"Cannot decrease further"}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/inc/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to increase %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}]"""
+
+        if self.args["max_sb"]:
+            self.args["filters"] += "if score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s " % self.args
+            end += """\nexecute unless score %(adjust_pl)s %(adjust_sb)s < %(max_sb)s """ + ("if score %(adjust_pl)s %(adjust_sb)s > %(min_sb)s " if self.args["min_sb"] else "") + """run tellraw @s ["%(indent)s",{"text":"☐","color":"gray","bold":true},"%(label)s ", {"text":"-","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/dec/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to decrease %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"gray","hoverEvent":{"action":"show_text","contents":["",{"text":"Cannot increase further"}]}}]"""
+
+        return ("""# %(label)s"""
+                + """\nexecute%(filters)srun tellraw @s ["%(indent)s",{"text":"☐","color":"gray","bold":true},"%(label)s ", {"text":"-","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/dec/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to decrease %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}, " ", {"score":{"name":"%(adjust_pl)s","objective":"%(adjust_sb)s"}}, " ", {"text":"+","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/inc/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to increase %(label)s by "},{"score":{"name":"%(inc_pl)s","objective":"%(inc_sb)s"}}]}}]"""
+                + end + "\n") % self.args
+    
+    def create_files(self, indent=0):
+        with open("inc/%(function)s.mcfunction" % self.args, "w", encoding="utf-8") as f:
+            print("# Generated with ericthelemur's Datapack Settings Generator\n", file=f)
+            if self.args["extra_inc_comm"]: print(self.args["extra_inc_comm"] % self.args, file=f)
+            print("scoreboard players operation %(adjust_pl)s %(adjust_sb)s += %(inc_pl)s %(inc_sb)s\nfunction %(namespace)s:config" % self.args, file=f)
+            
+        with open("dec/%(function)s.mcfunction" % self.args, "w", encoding="utf-8") as f:
+            print("# Generated with ericthelemur's Datapack Settings Generator\n", file=f)
+            if self.args["extra_dec_comm"]: print(self.args["extra_dec_comm"] % self.args, file=f)
+            print("scoreboard players operation %(adjust_pl)s %(adjust_sb)s -= %(inc_pl)s %(inc_sb)s\nfunction %(namespace)s:config" % self.args, file=f)
+
+
+
 class Foldable(ConfigField):
     """Toggle with dependent options contents, which get placed in function"""
     def __init__(self, label, sb_player, function, fold_function, *contents, colour="white", extra_enable_comm="", extra_disable_comm=""):
@@ -152,7 +208,7 @@ class Foldable(ConfigField):
         self.args["indent"] = " " * indent_size * indent
         return ("""# %(label)s"""
                 + """\nexecute unless score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"▷ ","color":"red","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/enable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to enable ","color":"green"},"%(label)s"]}},"%(label)s"]"""
-                + """\nexecute if score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☑","color":"green","clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s"]"""
+                + """\nexecute if score %(sb_player)s > zero constants run tellraw @s ["%(indent)s",{"text":"☑","color":"green","bold":true,"clickEvent":{"action":"run_command","value":"/function %(namespace)s:config/disable/%(function)s"},"hoverEvent":{"action":"show_text","contents":["",{"text":"Click to disable ","color":"red"},"%(label)s"]}},"%(label)s"]"""
                 + """\nexecute if score %(sb_player)s > zero constants run function %(namespace)s:config/%(fold_function)s"""
                 + "\n\n") % self.args
 
@@ -175,23 +231,6 @@ class Foldable(ConfigField):
                 c.create_files()
 
 
-class Config(ConfigField):
-    """Root class"""
-    def __init__(self, *contents):
-        self.contents = contents
-
-    def render(self, indent=0):
-        for c in self.contents:
-            print(c.render(indent=0))
-
-    def create_files(self, indent=0):
-        with open("config.mcfunction", "w", encoding="utf-8") as f:
-            print("# Generated with ericthelemur's Datapack Settings Generator\n", file=f)
-            for c in self.contents:
-                print(c.render(indent=0), file=f)
-
-        for c in self.contents:
-            c.create_files()
 
 # Example for my ETL Utils pack
 Config(
@@ -203,11 +242,13 @@ Config(
 
     SubTitle("Pings"),
     Foldable("Pings", "etl_ping enabled", "ping", "ping_config",
-        Adjustable("Ping Cooldown", "etl_ping_cd enabled", "ping_cooldown", "etl_ping_cooldow", "etl_ping_cooldown", "etl_ping_cooldow", "etl_ping_cd_inc", 
-                    min_sb="zero constants", max_sb="one_hundred constants",
-                    extra_enable_comm="scoreboard players set @a etl_ping_cooldow 0"),
+        AdjustToggle("Ping Cooldown", "etl_ping_cd enabled", "ping_cooldown", "etl_ping_cooldow", "etl_ping_cooldown", "etl_ping_cooldow", "etl_ping_cd_inc", 
+                         min_sb="zero constants", max_sb="one_hundred constants",
+                         extra_enable_comm="scoreboard players set @a etl_ping_cooldow 0"),
         Toggle("Ping Sounds", "etl_ping_sound enabled", "ping_sound"),
-        Toggle("Entity Pings", "etl_ping_entity enabled", "ping_entity")
+        Toggle("Entity Pings", "etl_ping_entity enabled", "ping_entity"),
+        Adjustable("Adjust", "adjust_test", "etl_ping_cooldow", "etl_ping_cooldown", "etl_ping_cooldow", "etl_ping_cd_inc", 
+                            min_sb="zero constants", max_sb="one_hundred constants"),
     ),
     Uninstall("ETL Utils")
 ).create_files()
