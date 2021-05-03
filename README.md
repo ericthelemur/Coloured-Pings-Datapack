@@ -13,3 +13,8 @@ Can target blocks and entities using a ray-casting system, entity pings appear a
 This also intelligently switches to an underwater mode when underwater. It should also account for thin blocks, although not for slabs and stairs currently.
 
 ![image](https://user-images.githubusercontent.com/8903016/115803119-27260a80-a3d8-11eb-887f-b7d3165d73b1.png)
+
+## Settings
+This datapack provides a clean and comprehensive settings menu, with folding options to hide sub-options when disabled. This also includes a clean uninstall feature, which will ensure this datapack does not leave behind a massive trail of old scoreboards.
+
+![image](https://user-images.githubusercontent.com/8903016/116330013-82833e80-a7c4-11eb-935b-af280e2947f2.png)
