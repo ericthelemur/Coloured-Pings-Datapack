@@ -17,4 +17,5 @@ This also intelligently switches to an underwater mode when underwater. It shoul
 ## Settings
 This datapack provides a clean and comprehensive settings menu, with folding options to hide sub-options when disabled. This also includes a clean uninstall feature, which will ensure this datapack does not leave behind a massive trail of old scoreboards.
 
-![image](https://user-images.githubusercontent.com/8903016/116330013-82833e80-a7c4-11eb-935b-af280e2947f2.png)
+![image](https://user-images.githubusercontent.com/8903016/116833236-01ef8400-abb0-11eb-81cd-7227f1e5addd.png)
+
